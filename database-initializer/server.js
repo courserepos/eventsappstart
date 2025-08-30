@@ -1,17 +1,13 @@
 'use strict';
 
 // Going to connect to MySQL database
-const mysql = require('mysql');
+const mysql = require('mysql2/promise');
 const HOST = process.env.DBHOST ? process.env.DBHOST : "127.0.0.1";
 const USER = process.env.DBUSER ? process.env.DBUSER : "root";
 const PASSWORD = process.env.DBPASSWORD ? process.env.DBPASSWORD : "letmein!";
 
-const create_database_sql = `DROP DATABASE IF EXISTS events_db;
-CREATE DATABASE events_db;
-USE events_db;`
 
-
-const create_table_sql = `CREATE TABLE events(
+const create_events_table_sql = `CREATE TABLE events(
    id INT NOT NULL AUTO_INCREMENT,
    title VARCHAR(255) NOT NULL,
    description TEXT NOT NULL,
@@ -19,8 +15,9 @@ const create_table_sql = `CREATE TABLE events(
    likes INT DEFAULT 0,
    datetime_added TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
    PRIMARY KEY ( id )
-);
-CREATE TABLE comments(
+);`
+
+const create_comments_table_sql = `CREATE TABLE comments(
    id INT NOT NULL AUTO_INCREMENT,
    comment TEXT NOT NULL,
    event_id INT NOT NULL,
@@ -29,9 +26,8 @@ CREATE TABLE comments(
    FOREIGN KEY (event_id) REFERENCES events(id)
 );`
 
-const add_record_sql = `INSERT INTO events (title, description, location) VALUES ('Pet Show Db', 'Super-fun with furry friends!', 'Dog Park');
-INSERT INTO events (title,  description, location) VALUES ('Company Picnic Db', 'Come for free food and drinks.', 'At the lake');
-`
+const add_record_sql = `INSERT INTO events (title, description, location) VALUES ('Pet Show Db', 'Super-fun with furry friends!', 'Dog Park');`
+const add_record2_sql = `INSERT INTO events (title,  description, location) VALUES ('Company Picnic Db', 'Come for free food and drinks.', 'At the lake');`
 
 
 async function getConnection(db) {
@@ -52,25 +48,25 @@ async function getConnection(db) {
 
 async function init_database() {
     const connection = await getConnection(mysql);
-    connection.connect().then(async function () {
-            console.log("Connected!");
-            // Create the database and tables
-            await  connection.query(create_database_sql);
-            console.log("Database created");
-            await  connection.query(create_table_sql);
-            console.log("Tables created");
-            // Add records
-            await connection.query(add_record_sql);
-            console.log("Records added");
-            succeeded = true;
-            connection.end();
-    }).catch(function (err) {
+    try {
+        console.log("Connected!");
+        await connection.query('DROP DATABASE IF EXISTS events_db');
+        await connection.query('CREATE DATABASE events_db');
+        console.log("Database created");
+        await connection.query('USE events_db');
+        await connection.query(create_events_table_sql);
+        await connection.query(create_comments_table_sql);
+        console.log("Tables created");
+        await connection.query(add_record_sql);
+        await connection.query(add_record2_sql);
+        console.log("Records added");
+        succeeded = true;
+    } catch (err) {
         console.error(err.message);
-            connection.end();
-
-    });
+    } finally {
+        connection.end();
+    }
 }
-
 
 
 function sleep(ms) {

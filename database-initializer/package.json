@@ -11,12 +11,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "mysql": "^2.18.1"
+    "mysql2": "^3.14.3"
   },
   "devDependencies": {
     "chai": "^4.3.0",
-    "mocha": "^6.2.3",
-    "nyc": "^14.1.1",
+    "mocha": "^11.7.1",
+    "nyc": "^17.1.0",
     "supertest": "^4.0.2"
   }
 }
