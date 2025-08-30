@@ -7,8 +7,8 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 const mockEvents = [
-    { id: 1, title: 'a mocked event', description: 'something really cool', location: 'Chez Joe Pizza', likes: 0, datetime_added: '2022-02-01:12:00' },
-    { id: 2, title: 'another mocked event', description: 'something even cooler', location: 'Chez John Pizza', likes: 0, datetime_added: '2022-02-01:12:00' },
+    { id: 1, title: 'a mocked event', description: 'something really cool', location: 'Chez Joe Pizza', likes: 0, datetime_added: '2022-02-01:12:00', event_time: '2022-02-01 12:00:00' },
+    { id: 2, title: 'another mocked event', description: 'something even cooler', location: 'Chez John Pizza', likes: 0, datetime_added: '2022-02-01:12:00', event_time: '2022-02-01 12:00:00' },
 ];
 
 
@@ -80,7 +80,9 @@ describe('Testing Add Event with mock data', function () {
                 description: 'event',
                 location: 'somewhere',
                 id: 5,
-                likes: 0
+                likes: 0,
+                datetime_added: '2022-02-01:12:00',
+                event_time: '2022-02-01 12:00:00'
             }
         }
 
@@ -121,7 +123,9 @@ describe('Testing Update Event with mock data', function () {
                 description: 'event',
                 location: 'somewhere else',
                 id: 1,
-                likes: 0
+                likes: 0,
+                datetime_added: '2022-02-01:12:00',
+                event_time: '2022-02-01 12:00:00'
             }
         }
              // Create a spy for console.log
@@ -347,7 +351,7 @@ describe('Testing Delete Comments with mock data', function () {
 describe('Testing Get Events with db ', function () {
     let fakeQuery, fakeCreateConnection, connectionStub, expectedQuery;
     beforeEach(function () {
-        expectedQuery = 'SELECT id, title, description, location, likes, datetime_added FROM events;';
+    expectedQuery = 'SELECT id, title, event_time, description, location, likes, datetime_added FROM events;';
         fakeQuery = sinon.fake.resolves(mockEvents);
         fakeCreateConnection = sinon.fake.resolves({ query: fakeQuery, end: sinon.fake() });
         connectionStub = sinon.stub(db, 'createConnection').callsFake(fakeCreateConnection);
@@ -370,7 +374,7 @@ describe('Testing Get Event with db ', function () {
     let fakeQuery, fakeCreateConnection, connectionStub, expectedQuery, expectedParams, id;
     beforeEach(function () {
         id = 1
-        expectedQuery = 'SELECT e.id, e.title, e.description, e.location, e.likes, e.datetime_added, c.comment, c.id as comment_id FROM events e LEFT OUTER JOIN comments c ON e.id = c.event_id WHERE e.id = ?;';
+    expectedQuery = 'SELECT e.id, e.title, e.event_time, e.description, e.location, e.likes, e.datetime_added, c.comment, c.id as comment_id FROM events e LEFT OUTER JOIN comments c ON e.id = c.event_id WHERE e.id = ?;';
         expectedParams = id;
         fakeQuery = sinon.fake.resolves(mockEvents);
         fakeCreateConnection = sinon.fake.resolves({ query: fakeQuery, end: sinon.fake() });
@@ -405,8 +409,8 @@ describe('Testing Add Event with Db', function () {
                 likes: 0
             }
         }
-        expectedQuery = 'INSERT INTO events (title, description, location) VALUES (?,?,?) RETURNING id;';
-        expectedParams = [request.body.title, request.body.description, request.body.location];
+    expectedQuery = 'INSERT INTO events (title, event_time, description, location) VALUES (?,?,?,?) RETURNING id;';
+    expectedParams = [request.body.title, request.body.event_time, request.body.description, request.body.location];
 
         fakeQuery = sinon.fake.resolves(4);
 
@@ -443,8 +447,8 @@ describe('Testing Update Event with Db', function () {
                 likes: 0
             }
         }
-        expectedQuery = 'UPDATE events SET title = ?, description = ?, location = ? WHERE id = ?;';
-        expectedParams = [request.body.title, request.body.description, request.body.location, request.body.id];
+    expectedQuery = 'UPDATE events SET title = ?, event_time = ?, description = ?, location = ? WHERE id = ?;';
+    expectedParams = [request.body.title, request.body.event_time, request.body.description, request.body.location, request.body.id];
 
         fakeQuery = sinon.fake.resolves({ result: 'success' });
         fakeCreateConnection = sinon.fake.resolves({ query: fakeQuery, end: sinon.fake() });
@@ -501,7 +505,7 @@ describe('Testing Un-Like Event with Db ', function () {
 
         expectedQuery = 'UPDATE events SET likes = likes - 1 WHERE id = ? AND likes > 0;';
         expectedParams = 2;
-        expectedQuery2 = 'SELECT id, title, description, location, likes, datetime_added FROM events WHERE id = ?;';
+    expectedQuery2 = 'SELECT id, title, event_time, description, location, likes, datetime_added FROM events WHERE id = ?;';
 
         fakeQuery = sinon.fake.resolves({ result: 'success' });
         fakeCreateConnection = sinon.fake.resolves({ query: fakeQuery, end: sinon.fake() });
@@ -530,7 +534,7 @@ describe('Testing Like Event with Db ', function () {
     beforeEach(function () {
 
         expectedQuery = 'UPDATE events SET likes = likes + 1 WHERE id = ?;';
-        expectedQuery2 = 'SELECT id, title, description, location, likes, datetime_added FROM events WHERE id = ?;';
+        expectedQuery2 = 'SELECT id, title, event_time, description, location, likes, datetime_added FROM events WHERE id = ?;';
         expectedParams = 2;
 
         fakeQuery = sinon.fake.resolves({ result: 'success' });

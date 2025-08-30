@@ -28,8 +28,8 @@ async function getConnection(db) {
 // mock events data - Once deployed the data will come from database
 const mockEvents = {
     events: [
-        { id: 1, title: 'a mock event', description: 'something really cool', location: 'Chez Joe Pizza', likes: 0, datetime_added: '2022-02-01:12:00' },
-        { id: 2, title: 'another mock event', description: 'something even cooler', location: 'Chez John Pizza', likes: 0, datetime_added: '2022-02-01:12:00' },
+        { id: 1, title: 'Company Pet Show', event_time: 'November 6 at Noon', description: 'Super-fun with furry friends!', location: 'Reston Dog Park', likes: 0, datetime_added: '2025-08-30:12:00' },
+        { id: 2, title: 'Company Picnic', event_time: 'July 4th at 10:00AM', description: 'Come for free food and drinks.', location: 'Central Park', likes: 0, datetime_added: '2025-08-30:12:02' },
     ]
 };
 
@@ -47,7 +47,7 @@ const dbEvents = { events: [] };
 async function getEvents(db = mariadb) {
     const conn = await getConnection(db);
     if (conn) {
-        const sql = 'SELECT id, title, description, location, likes, datetime_added FROM events;';
+    const sql = 'SELECT id, title, event_time, description, location, likes, datetime_added FROM events;';
         console.log(sql);
         return conn.query(sql)
             .then(rows => {
@@ -56,6 +56,7 @@ async function getEvents(db = mariadb) {
                 rows.forEach((row) => {
                     const ev = {
                         title: row.title,
+                        event_time: row.event_time,
                         description: row.description,
                         location: row.location,
                         id: row.id,
@@ -83,13 +84,14 @@ async function getEvents(db = mariadb) {
 async function getEvent(id, db = mariadb) {
     const conn = await getConnection(db);
     if (conn) {
-        const sql = 'SELECT e.id, e.title, e.description, e.location, e.likes, e.datetime_added, c.comment, c.id as comment_id FROM events e LEFT OUTER JOIN comments c ON e.id = c.event_id WHERE e.id = ?;';
+    const sql = 'SELECT e.id, e.title, e.event_time, e.description, e.location, e.likes, e.datetime_added, c.comment, c.id as comment_id FROM events e LEFT OUTER JOIN comments c ON e.id = c.event_id WHERE e.id = ?;';
         console.log(sql);
         return conn.query(sql, id)
             .then(rows => {
                 console.log("retrieved event with id", id);
                 const ev = { 
                     title:rows[0].title,
+                    event_time:rows[0].event_time,
                     description:rows[0].description,
                     location:rows[0].location,
                     id:rows[0].id,
@@ -149,13 +151,14 @@ async function updateEvent(req, db = mariadb) {
 
     const ev = {
         title: req.body.title,
+        event_time: req.body.event_time,
         description: req.body.description,
         location: req.body.location,
         id: req.body.id
     }
-    const sql = 'UPDATE events SET title = ?, description = ?, location = ? WHERE id = ?;';
+    const sql = 'UPDATE events SET title = ?, event_time = ?, description = ?, location = ? WHERE id = ?;';
     console.log(sql);
-    const values = [ev.title, ev.description, ev.location, ev.id];
+    const values = [ev.title, ev.event_time, ev.description, ev.location, ev.id];
     const conn = await getConnection(db);
     if (conn) {
         conn.query(sql, values)
@@ -189,15 +192,16 @@ async function addEvent(req, db = mariadb) {
     // create a new object from the json data and add an id
     const ev = {
         title: req.body.title,
+        event_time: req.body.event_time,
         description: req.body.description,
         location: req.body.location,
         id: -1,
         likes: 0,
         datetime_added: new Date().toUTCString()
     }
-    const sql = 'INSERT INTO events (title, description, location) VALUES (?,?,?) RETURNING id;';
+    const sql = 'INSERT INTO events (title, event_time, description, location) VALUES (?,?,?,?) RETURNING id;';
     console.log(sql);
-    const values = [ev.title, ev.description, ev.location];
+    const values = [ev.title, ev.event_time, ev.description, ev.location];
     const conn = await getConnection(db);
     if (conn) {
         conn.query(sql, values)
@@ -352,7 +356,7 @@ async function changeLikes(id, increment, db = mariadb) {
     const update_sql = increment ?
         'UPDATE events SET likes = likes + 1 WHERE id = ?;'
         : 'UPDATE events SET likes = likes - 1 WHERE id = ? AND likes > 0;';
-    const select_sql = 'SELECT id, title, description, location, likes, datetime_added FROM events WHERE id = ?;';
+    const select_sql = 'SELECT id, title, event_time, description, location, likes, datetime_added FROM events WHERE id = ?;';
     console.log(update_sql);
     console.log(select_sql);
     const conn = await getConnection(db);

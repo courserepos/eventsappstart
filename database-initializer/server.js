@@ -10,6 +10,7 @@ const PASSWORD = process.env.DBPASSWORD ? process.env.DBPASSWORD : "letmein!";
 const create_events_table_sql = `CREATE TABLE events(
    id INT NOT NULL AUTO_INCREMENT,
    title VARCHAR(255) NOT NULL,
+   event_time VARCHAR(100) NOT NULL,
    description TEXT NOT NULL,
    location VARCHAR(255) NOT NULL,
    likes INT DEFAULT 0,
@@ -26,8 +27,8 @@ const create_comments_table_sql = `CREATE TABLE comments(
    FOREIGN KEY (event_id) REFERENCES events(id)
 );`
 
-const add_record_sql = `INSERT INTO events (title, description, location) VALUES ('Pet Show Db', 'Super-fun with furry friends!', 'Dog Park');`
-const add_record2_sql = `INSERT INTO events (title,  description, location) VALUES ('Company Picnic Db', 'Come for free food and drinks.', 'At the lake');`
+const add_record_sql = `INSERT INTO events (title, event_time, description, location) VALUES ('Pet Show Db', 'November 6 at Noon', 'Super-fun with furry friends!', 'Dog Park');`
+const add_record2_sql = `INSERT INTO events (title, event_time, description, location) VALUES ('Company Picnic Db', 'July 4th at 10:00AM', 'Come for free food and drinks.', 'At the lake');`
 
 
 async function getConnection(db) {
