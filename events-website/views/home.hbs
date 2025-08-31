@@ -1,27 +1,32 @@
-<ul>
+<div class="row">
   {{#events}}
-  <hr />
-  <div class="container">
-    <h2>{{ title }}</h2>
-    <div class="h4">{{ description }}</div>
-    <div>When: {{ event_time }}</div>
-    <div>Where: {{ location }}</div>
-    <div><span class="like" id="{{ id }}">&#128077;</span></div>
-		<div><span id="like-{{ id }}">Likes: {{ likes }}</span></div>
-    <small class="text-muted">{{ datetime_added }}</small>
+  <div class="card" style="width: 20rem; margin:5px">
+    <div class="card-body">
+<div class="d-flex justify-content-between align-items-start">
+        <h2 class="card-title">{{ title }}</h2>
+        <a href="/event/delete/{{id}}" class="btn btn-danger"><span class="bi bi-trash"></span></a>
+      </div>
+
+      <p class="card-text">{{ description }}</p>
+      <p class="card-text">Location: {{ location }}</p>
+      <p class="card-text">Date and Time: {{ event_time }}</p>
+      <p class="card-text">Likes: {{ likes }}
+      <form method="POST" action="/like/event" style="display:inline">
+        <input type="hidden" value="{{id}}" name="id">
+        <button type="submit" class="btn btn-success">
+          <span class="bi bi-hand-thumbs-up"></span>
+        </button>
+      </form>
+      <form method="POST" action="/event/unlike" style="display:inline">
+        <input type="hidden" value="{{id}}" name="id">
+        <button type="submit" class="btn btn-warning">
+          <span class="bi bi-hand-thumbs-down"></span>
+        </button>
+      </form>
+      </p>
+
+      <a href="/event/{{id}}" class="btn btn-primary">View Event</a>
+    </div>
   </div>
   {{/events}}
-</ul>
-
-
-
-<script>
-	$(".like").css( 'cursor', 'pointer' ).click(function(){   	
-    	var url = "/like/" + this.id;
-    	$.get(url, function(data, status){
-        	var likeID = "like-" + data.id;
-        	document.getElementById(likeID).innerHTML = "Likes: " + data.likes;
-    });
-});
-
-</script>
+</div>

@@ -1,62 +1,74 @@
 'use strict';
 
 // Going to connect to MySQL database
-const mysql = require('mysql');
+const mysql = require('mysql2/promise');
+const HOST = process.env.DBHOST ? process.env.DBHOST : "127.0.0.1";
+const USER = process.env.DBUSER ? process.env.DBUSER : "root";
+const PASSWORD = process.env.DBPASSWORD ? process.env.DBPASSWORD : "letmein!";
 
-const create_table_sql = `CREATE TABLE events(
-    id INT NOT NULL AUTO_INCREMENT,
-    title VARCHAR(255) NOT NULL,
-    event_time VARCHAR(100) NOT NULL,
-    description TEXT NOT NULL,
-    location VARCHAR(255) NOT NULL,
-    likes INT DEFAULT 0,
-    datetime_added TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY ( id ));`
 
-const add_record_sql = `INSERT INTO events (title, event_time, description, location) 
-VALUES ('Company Pet Show (DB)', 'November 6 at Noon', 
-'Super-fun with furry friends!', 'Reston Dog Park'),
-('Company Picnic (DB)', 'July 4th at 10:00AM', 
-'Come for free food and drinks.', 'Central Park');`
+const create_events_table_sql = `CREATE TABLE events(
+   id INT NOT NULL AUTO_INCREMENT,
+   title VARCHAR(255) NOT NULL,
+   event_time VARCHAR(100) NOT NULL,
+   description TEXT NOT NULL,
+   location VARCHAR(255) NOT NULL,
+   likes INT DEFAULT 0,
+   datetime_added TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY ( id )
+);`
 
-function init_database() {
-    const HOST = process.env.DBHOST ? process.env.DBHOST : "127.0.0.1";
-    const USER = process.env.DBUSER ? process.env.DBUSER : "root";
-    const PASSWORD = process.env.DBPASSWORD ? process.env.DBPASSWORD : "letmein!";
-    const connection = mysql.createConnection({
-        host: HOST,
-        user: USER,
-        password: PASSWORD,
-    });
-    connection.connect(function (err) {
-        if (err) {
-            console.error(err.message);
-        }
-        else {
-            console.log("Connected!");
-            // Ensure the database doesn't exist
-            connection.query("DROP DATABASE IF EXISTS events_db;", function (err, result) {
-                console.log("Dropped Database");
-                // Create the database
-                connection.query("CREATE DATABASE events_db;", function (err, result) {
-                    // Switch to the database
-                    connection.query("USE events_db;", function (err, result) {
-                        console.log("Switched Database");
-                        // Create the Table
-                        connection.query(create_table_sql, function (err, result) {
-                            console.log("Table created");
-                            // Add a Record
-                            connection.query(add_record_sql, function (err, result) {
-                                console.log("Records added");
-                                succeeded = true;
-                            });
-                        });
-                    });
-                });
+const create_comments_table_sql = `CREATE TABLE comments(
+   id INT NOT NULL AUTO_INCREMENT,
+   comment TEXT NOT NULL,
+   event_id INT NOT NULL,
+   datetime_added TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY ( id ),
+   FOREIGN KEY (event_id) REFERENCES events(id)
+);`
+
+const add_record_sql = `INSERT INTO events (title, event_time, description, location) VALUES ('Pet Show Db', 'November 6 at Noon', 'Super-fun with furry friends!', 'Dog Park');`
+const add_record2_sql = `INSERT INTO events (title, event_time, description, location) VALUES ('Company Picnic Db', 'July 4th at 10:00AM', 'Come for free food and drinks.', 'At the lake');`
+
+
+async function getConnection(db) {
+    try {
+        return await db.createConnection(
+            {
+                host: HOST,
+                user: USER,
+                password: PASSWORD
             });
-        }
-    });
+    }
+    catch (err) {
+        console.log(err);
+        return null;
+    }
+
 }
+
+async function init_database() {
+    const connection = await getConnection(mysql);
+    try {
+        console.log("Connected!");
+        await connection.query('DROP DATABASE IF EXISTS events_db');
+        await connection.query('CREATE DATABASE events_db');
+        console.log("Database created");
+        await connection.query('USE events_db');
+        await connection.query(create_events_table_sql);
+        await connection.query(create_comments_table_sql);
+        console.log("Tables created");
+        await connection.query(add_record_sql);
+        await connection.query(add_record2_sql);
+        console.log("Records added");
+        succeeded = true;
+    } catch (err) {
+        console.error(err.message);
+    } finally {
+        connection.end();
+    }
+}
+
 
 function sleep(ms) {
     return new Promise((resolve) => {
