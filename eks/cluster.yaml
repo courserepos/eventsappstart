@@ -1,0 +1,71 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: userXX-cluster        # TODO - modify userXX to be your user number
+  region: us-east-2
+  version: "1.33"
+
+kubernetesNetworkConfig: 
+  serviceIPv4CIDR: 10.100.0.0/16
+
+availabilityZones: ["us-east-2a", "us-east-2b"]
+    
+iam:
+  withOIDC: true
+
+  serviceAccounts:
+  - metadata:
+      name: cluster-autoscaler-userXX    # TODO - modify userXX to be your user number
+      namespace: kube-system
+    wellKnownPolicies:
+      autoScaler: true
+  - metadata:
+      name: aws-load-balancer-controller-userXX    # TODO - modify userXX to be your user number
+      namespace: kube-system
+    wellKnownPolicies:
+      awsLoadBalancerController: true
+
+addons:
+  - name: vpc-cni
+    version: latest
+  - name: coredns
+    version: latest
+  - name: kube-proxy
+    version: latest
+  - name: aws-ebs-csi-driver
+    version: latest
+  - name: amazon-cloudwatch-observability
+    version: latest
+ 
+managedNodeGroups:
+
+  - name: nodegroup-1
+    spot: true
+    instanceTypes: ["t2.medium"]
+    minSize: 2
+    desiredCapacity: 2
+    maxSize: 4
+    volumeEncrypted: true
+    privateNetworking: true
+    iam:
+      withAddonPolicies:
+        albIngress: true
+        cloudWatch: true
+        autoScaler: true
+        ebs: true
+        xRay: true
+ 
+fargateProfiles:
+  - name: on-fargate
+    selectors:
+      - namespace: on-fargat
+  - name: myprofile
+    selectors: 
+    - namespace: prod
+      labels: 
+       stack: frontend
+
+cloudWatch:
+    clusterLogging:
+        enableTypes: ["api", "audit", "authenticator", "controllerManager", "scheduler"]
