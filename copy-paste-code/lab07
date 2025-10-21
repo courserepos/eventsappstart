@@ -1,0 +1,29 @@
+api-deployment.yaml
+===========================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ labels:
+   app: events-api
+ name: events-api
+spec:
+ replicas: 1
+ selector:
+   matchLabels:
+     app: events-api
+     ver: v1.0
+ template:
+   metadata:
+     labels:
+       app: events-api
+       ver: v1.0
+   spec:
+     containers:
+     - image: your-docker-hub-id/events-api:v1.0
+       name: events-api
+       ports:
+       - containerPort: 8082
+
+===========================================
+
