@@ -1,0 +1,58 @@
+db_init_job.yaml
+==================================================
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+ name: db-initializer
+spec:
+ template:
+   spec:
+     containers:
+     - image: your-dockerhub-id/events-job:v1.0
+       name: db-init-job
+       imagePullPolicy: "Always"
+       env:
+       - name: DBHOST
+         value: "database-server-mariadb"
+       - name: DBUSER
+         value: "root"
+       - name: DBPASSWORD
+         valueFrom:
+           secretKeyRef:
+             name: database-server-mariadb
+             key: mariadb-root-password
+     restartPolicy: Never
+ backoffLimit: 4
+
+==================================================
+
+
+
+
+Lab Bonus (if you have time)
+cronjob.yaml
+
+==================================================
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+ name: hello
+spec:
+ schedule: "*/1 * * * *"
+ jobTemplate:
+   spec:
+     template:
+       spec:
+         containers:
+         - name: hello
+           image: busybox
+           args:
+           - /bin/sh
+           - -c
+           - date; echo Hello from the Kubernetes cluster
+         restartPolicy: OnFailure
+
+==================================================
+
