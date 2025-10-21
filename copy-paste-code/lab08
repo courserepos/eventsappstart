@@ -1,0 +1,63 @@
+api-service.yaml
+===========================================
+
+apiVersion: v1
+kind: Service
+metadata:
+ labels:
+   app: events-api-svc
+ name: events-api-svc
+spec:
+ ports:
+ - port: 8082
+   protocol: TCP
+   targetPort: 8082
+ selector:
+   app: events-api
+   ver: v1.0
+ type: ClusterIP
+
+===========================================
+
+
+
+
+Modify the web-deployment.yaml and add these 3 lines to end:
+===========================================
+
+env:
+  - name: SERVER
+    value: "http://events-api-svc:8082"
+
+===========================================
+
+
+
+
+web-service.yaml
+===========================================
+
+apiVersion: v1
+kind: Service
+metadata:
+ labels:
+   app: events-web-svc
+ name: events-web-svc
+spec:
+ ports:
+ - port: 80
+   protocol: TCP
+   targetPort: 8080
+ selector:
+   app: events-web
+   ver: v1.0
+ type: LoadBalancer
+
+===========================================
+
+
+
+
+
+
+
