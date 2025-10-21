@@ -1,0 +1,80 @@
+deny-from-other-ns.yaml
+======================================
+
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+ namespace: default
+ name: deny-from-other-namespaces
+spec:
+ podSelector:
+   matchLabels: {}
+ ingress:
+ - from:
+   - podSelector: {}
+
+======================================
+
+
+
+allow-web-traffic.yaml
+======================================
+
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+ namespace: default
+ name: allow-web-traffic
+spec:
+ podSelector:
+   matchLabels:
+     app: events-web
+ ingress:
+ - from:
+   - ipBlock:
+      cidr: '0.0.0.0/0'
+======================================
+
+
+
+block-egress.yaml
+======================================
+
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+ name: default-deny-all-egress
+ namespace: test
+spec:
+ policyTypes:
+ - Egress
+ podSelector: {}
+ egress: []
+
+======================================
+
+
+
+
+allow-egress-dns.yaml
+======================================
+
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+ name: allow-egress-dns
+ namespace: test
+spec:
+ policyTypes:
+ - Egress
+ podSelector: {}
+ egress:
+ - ports:
+   - port: 53
+     protocol: UDP
+   - port: 53
+     protocol: TCP
+ - to:
+   - namespaceSelector: {}
+
+======================================
