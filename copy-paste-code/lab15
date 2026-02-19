@@ -17,26 +17,6 @@ spec:
 
 
 
-allow-web-traffic.yaml
-======================================
-
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
- namespace: default
- name: allow-web-traffic
-spec:
- podSelector:
-   matchLabels:
-     app: events-web
- ingress:
- - from:
-   - ipBlock:
-      cidr: '0.0.0.0/0'
-======================================
-
-
-
 block-egress.yaml
 ======================================
 
