@@ -10,7 +10,7 @@ autoModeConfig:
 
 managedNodeGroups:
   - name: standard-workers
-    instanceType: t2.medium
+    instanceType: t3a.medium
     desiredCapacity: 2
 
 iam:
