@@ -4,7 +4,9 @@ kind: ClusterConfig
 metadata:
   name: userX-cluster        # TODO - modify userX to be your user number
   region: us-east-2
-  version: "1.33" 
+  version: "1.37"
+autoModeConfig:
+  enabled: false
 
 managedNodeGroups:
   - name: standard-workers
